@@ -31,9 +31,9 @@ int main(int argc,char* argv[]) {
 		int num = 1;
 		for (int i = 0; i < N*(N + 1); i++) {//make M--augmented matrix
 			M[i] = rand() % 10;
-			if ((i+1)%11 == 0)
+			if ((i+1)%(N+1) == 0)
 				M[i] += (rand()%100);
-			if (i%11 == 0)
+			if (i%(N+1) == 0)
 				printf("\n");
 			printf("%d ",(int)M[i]);
 		}
