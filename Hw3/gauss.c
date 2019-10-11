@@ -4,8 +4,8 @@
 #include <stdlib.h>
 #include "mpi.h"
 
-const int rows = 3; /*the rows of matrix*/
-const int cols = 3; /*the cols of matrix*/
+const int rows = 4; /*the rows of matrix*/
+const int cols = 4; /*the cols of matrix*/
 
 int main(int argc, char **argv)
 {
@@ -30,8 +30,7 @@ int main(int argc, char **argv)
 
 	if (myid==0)
 	{
-		starttime = MPI_Wtime();
-		printf("please input coefficient:\n");
+		printf("please input coefficients:\n");
 		for(i=0;i<cols;i++)
 		{//get A
 			for(j=0;j<rows;j++)
@@ -39,7 +38,7 @@ int main(int argc, char **argv)
 				scanf("%lf",&A[i][j]);
 			}
 		}
-		printf("please input constant:\n");
+		printf("please input constants:\n");
 		for(i=0;i<rows;i++)
 		{//get B
 			scanf("%lf",&B[i]);
@@ -61,7 +60,7 @@ int main(int argc, char **argv)
 
 	int x;
 	double coe;
-
+	starttime = MPI_Wtime();
 	for(x=0;x<rows;x++)
 	{
 		MPI_Bcast(&AB[x][0],cols+1,MPI_DOUBLE,0,MPI_COMM_WORLD);
@@ -148,7 +147,7 @@ int main(int argc, char **argv)
 					temp=temp+AB[k][j]*X[j];
 				X[k]=(AB[k][cols]-temp)/AB[k][k];
 			}
-			printf("x:\n");
+			printf("X:\n");
 			for(i=0;i<rows;i++)
 				printf("X[%d]=%.2f\n",i,X[i]);
 		}
@@ -177,7 +176,7 @@ int main(int argc, char **argv)
 	totaltime = endtime - starttime;
 
 	if (myid == masterpro)
-	printf("total time :%f s.\n",totaltime);
+		printf("total time :%f s.\n",totaltime);
 
 	MPI_Finalize();
 

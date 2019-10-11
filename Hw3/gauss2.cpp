@@ -1,4 +1,3 @@
-/**yhf at YUQUAN**/
 #include "mpi.h"
 #include <iostream>
 #include <string>
@@ -7,7 +6,7 @@
 #include <cstdlib>
 #include <algorithm>
 using namespace std;
-const int N = 2000;
+const int N = 15;//number of variable
 int myid, numproc;
 void copyMemory(const double *M, double *A) {//复制矩阵使得同个进程中需要的内存是连续的
 	for (int i = 0; i < N*(N + 1); i++)
@@ -21,14 +20,22 @@ int main(int argc,char* argv[]) {
 	MPI_Comm_size(MPI_COMM_WORLD,&numproc);
 	double *M, *c, *M_trans,*A,*tempRow;
 	int *map = new int[N]; int *rmap = new int[N];
+	int masterpro=0;
 	for (int i = 0; i < N; i++) {
 		map[i] = -1; rmap[i] = -1;
 	}
 	if (myid == 0) {//内存分配
 		M = new double[N*(N+1)];
 		M_trans = new double[N*(N + 1)];
-		for (int i = 0; i < N*(N + 1); i++) {
+		printf("Augmented matrix:");
+		int num = 1;
+		for (int i = 0; i < N*(N + 1); i++) {//make M--augmented matrix
 			M[i] = rand() % 10;
+			if ((i+1)%11 == 0)
+				M[i] += (rand()%100);
+			if (i%11 == 0)
+				printf("\n");
+			printf("%d ",(int)M[i]);
 		}
 		
 		copyMemory(M, M_trans);
@@ -42,6 +49,7 @@ int main(int argc,char* argv[]) {
 		c = new double[N];
 	}
 	tempRow = new double[N + 1];
+
 	MPI_Scatter(M_trans, N*(N+1) / numproc,MPI_DOUBLE,A,N*(N+1)/numproc,MPI_DOUBLE,0,MPI_COMM_WORLD);//分发矩阵
 	delete M_trans;
 	double local_max_value, global_max_value;
@@ -87,9 +95,9 @@ int main(int argc,char* argv[]) {
 				map[N - 1] = i;
 			}
 		}
-		printf("\n");
+		printf("\nSolutions X[%d]:\n",N);
 	}
-	if (myid == 0) {	//输出
+	if (myid == 0) {//输出
 		for (int i = N-1; i >=0; i--) {
 			int index = map[i] % numproc*(N / numproc) + map[i] / numproc;
 			for (int j = N-1; j >i; j--) {
@@ -98,11 +106,12 @@ int main(int argc,char* argv[]) {
 			c[i] = M[index*(N + 1) + N] / M[index*(N+1)+i];
 		}
 		for (int i = 0; i < N; i++) {
-			printf("C[%d]=%.2f\n",i, c[i]);
+			printf("X[%d]=%.2f\n",i, c[i]);
 		}
 	}
 	t2 = MPI_Wtime();
-	printf("It take %.2lfs\n", t2-t1);
+	if (myid==masterpro)
+		printf("total time:  %.6lf s\n", t2-t1);
 	MPI_Finalize();
+	return 0;
 }
-
